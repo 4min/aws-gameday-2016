@@ -4,25 +4,7 @@ import json
 import decimal
 from boto3.dynamodb.conditions import Key, Attr
 
-msg2process = 111
-
-# Helper class to convert a DynamoDB item to JSON.
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            if o % 1 > 0:
-                return float(o)
-            else:
-                return int(o)
-        return super(DecimalEncoder, self).default(o)
-
-dynamodb = boto3.resource('dynamodb', region_name='eu-central-1', endpoint_url="http://localhost:8000")
-
-try:
-  dynamodb.Table('FSMessages').delete()
-  dynamodb.Table('FSMessages_complete').delete()
-except:
-  pass
+dynamodb = boto3.resource('dynamodb', region_name='eu-central-1', endpoint_url="https://dynamodb.eu-central-1.amazonaws.com")
 
 msg_table = dynamodb.create_table(
   TableName='FSMessages',
@@ -82,22 +64,3 @@ proc_table = dynamodb.create_table(
 
 print("MSG table status:", msg_table.table_status)
 print("PROC table status:", proc_table.table_status)
-
-messages_table = dynamodb.Table('FSMessages')
-processed_table = dynamodb.Table('FSMessages_complete')
-
-msgs = [
-  {"msgid":"123", "total_parts": "2", "part_number": 1, 'data':"Hello, "},
-  {"msgid":"123", "total_parts": "2", "part_number": 2, 'data':"World"}
-]
-
-  #persist message to dynamo
-for msg in msgs:
-  messages_table.put_item(
-      Item={
-          'msgid': msg['msgid'],
-          'total_parts': msg['total_parts'],
-          'part_number': msg['part_number'],
-          'data': msg['data']
-          }
-      )
