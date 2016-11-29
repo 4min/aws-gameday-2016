@@ -10,4 +10,4 @@ wget https://raw.githubusercontent.com/4min/aws-gameday-2016/master/process_mess
 chmod +x server.py
 touch /var/run/gameday.pid
 touch /var/log/gameday.log
-nohup python /server_basic_working.py 85c25bd823 https://dashboard.cash4code.net/score >/var/log/gameday.log 2>&1 & echo \$! > /var/run/gameday.pid
+nohup python /server.py 85c25bd823 https://dashboard.cash4code.net/score >/var/log/gameday.log 2>&1 & echo \$! > /var/run/gameday.pid
