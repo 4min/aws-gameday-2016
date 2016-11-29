@@ -32,7 +32,6 @@ APP = Flask(__name__)
 
 dynamodb = boto3.resource('dynamodb', region_name='eu-central-1')
 table = dynamodb.Table('FSMessages')
-fscomplete
 
 
 
