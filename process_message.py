@@ -1,10 +1,20 @@
 from __future__ import print_function # Python 2/3 compatibility
+from flask import Flask, request
+import logging
+import argparse
+import urllib2
 import boto3
 import json
 import decimal
+import os
 from boto3.dynamodb.conditions import Key, Attr
 
-msg2process = "123"
+# parsing arguments
+PARSER = argparse.ArgumentParser(description='Script to process a message from dynamo')
+PARSER.add_argument('MSG_ID', help="msg2process")
+ARGS = PARSER.parse_args()
+
+msg2process = ARGS.MSG_ID
 
 # Helper class to convert a DynamoDB item to JSON.
 class DecimalEncoder(json.JSONEncoder):
@@ -15,6 +25,9 @@ class DecimalEncoder(json.JSONEncoder):
             else:
                 return int(o)
         return super(DecimalEncoder, self).default(o)
+
+API_TOKEN = os.environ['APITOKEN']
+API_BASE = os.environ['APIBASE']
 
 dynamodb = boto3.resource('dynamodb', region_name='eu-central-1', endpoint_url="http://localhost:8000")
 
@@ -61,6 +74,14 @@ dynamodb.Table('FSMessages_complete').put_item(
   )
 
 print (final_message)
+
+url = API_BASE + '/' + msg_id
+print url
+print result
+req = urllib2.Request(url, data=result, headers={'x-gameday-token':API_TOKEN})
+resp = urllib2.urlopen(req)
+resp.close()
+print resp
 
 
 
