@@ -28,26 +28,26 @@ msg_table = dynamodb.create_table(
   TableName='FSMessages',
   KeySchema=[
     {
-      'AttributeName': 'msgid-partnum',
+      'AttributeName': 'msgid',
       'KeyType': 'HASH'  #Partition key
+    },
+    {
+      'AttributeName': 'part_number',
+      'KeyType': 'RANGE'
     }
   ],
   AttributeDefinitions=[
     {
-      'AttributeName': 'msgid-partnum',
+      'AttributeName': 'msgid',
       'AttributeType': 'S'
-    # },
-    # {
-    #   'AttributeName': 'msgid',
-    #   'AttributeType': 'S'
-    # },
+    },
     # {
     #   'AttributeName': 'total_parts',
     #   'AttributeType': 'N'
     # },
-    # {
-    #   'AttributeName': 'part_number',
-    #   'AttributeType': 'N'
+    {
+      'AttributeName': 'part_number',
+      'AttributeType': 'N'
     # },
     # {
     #   'AttributeName': 'data',
@@ -87,15 +87,14 @@ messages_table = dynamodb.Table('FSMessages')
 processed_table = dynamodb.Table('FSMessages_complete')
 
 msgs = [
-  {"msgid-partnum": "123-1", "msgid":"123", "total_parts": "2", "part_number": "1", "data":"Hello, "},
-  {"msgid-partnum": "123-2", "msgid":"123", "total_parts": "2", "part_number": "2", "data":"World"}
-  ]
+  {"msgid":"123", "total_parts": "2", "part_number": 1, 'data':"Hello, "},
+  {"msgid":"123", "total_parts": "2", "part_number": 2, 'data':"World"}
+]
 
   #persist message to dynamo
 for msg in msgs:
   messages_table.put_item(
       Item={
-          'msgid-partnum': msg['msgid'],
           'msgid': msg['msgid'],
           'total_parts': msg['total_parts'],
           'part_number': msg['part_number'],
