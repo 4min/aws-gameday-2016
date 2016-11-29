@@ -11,6 +11,7 @@ from flask import Flask, request
 import logging
 import argparse
 import urllib2
+import boto3
 
 # logging.basicConfig(level=logging.DEBUG)
 
@@ -25,6 +26,9 @@ ARGS = PARSER.parse_args()
 MESSAGES = {} # A dictionary that contains message parts
 API_BASE = ARGS.API_base
 # 'https://csm45mnow5.execute-api.us-west-2.amazonaws.com/dev'
+
+DYNAMODB = boto3.resource('dynamodb')
+STATE_TABLE = DYNAMODB.Table('FSMessages')
 
 APP = Flask(__name__)
 
@@ -53,6 +57,12 @@ def process_message(msg):
     msg_id = msg['Id'] # The unique ID for this message
     part_number = msg['PartNumber'] # Which part of the message it is
     data = msg['Data'] # The data of the message
+
+    #store message
+    store_message(msg_id, part_number, data)
+
+    #check and process message if applicable
+    check_messages(msg_id)
 
     # Try to get the parts of the message from the MESSAGES dictionary.
     # If it's not there, create one that has None in both parts
@@ -86,6 +96,59 @@ def process_message(msg):
         print response
 
     return 'OK'
+
+def store_message(input_id, part_num, data):
+    """
+    stores the message locally on a file on disk for persistence
+    """
+    try:
+        STATE_TABLE.update_item(
+            Key={
+                'Id': input_id
+            },
+            UpdateExpression="set #key=:val",
+            ExpressionAttributeValues={
+                ":val":data
+            },
+            ExpressionAttributeNames={
+                "#key":str(part_num),
+                "#p":"processed"
+            },
+            ConditionExpression="attribute_not_exists(#p)"
+        )
+    except Exception:
+        # conditional update failed since we have already processed this message
+        # at this point we can bail since we don't want to process again
+        # and lose cash moneys
+        return False
+
+
+def check_messages(input_id):
+    """
+    checking to see in dynamo if we have the part already
+    """
+    # do a get item from dynamo to see if item exists
+    response = STATE_TABLE.get_item(
+        Key={
+            'Id': input_id
+        },
+        ConsistentRead=True
+    )
+    item = response['Item']
+    # check if both parts exist
+    if "0" in item and "1" in item:
+        print("we have both!")
+        # we have all the parts
+        build_final(item, input_id)
+        # now we need to update dynamo saying we processed this message
+	    # TODO: implement this.
+    else:
+        # we have some parts but not all
+        return
+
+def build_final(item, input_id):
+
+
 
 if __name__ == "__main__":
 
