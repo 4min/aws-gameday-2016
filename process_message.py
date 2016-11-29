@@ -71,8 +71,7 @@ print (final_message)
 
 url = API_BASE + '/' + msg_id
 print(url)
-print(result)
-req = urllib2.Request(url, data=result, headers={'x-gameday-token':API_TOKEN})
+req = urllib2.Request(url, data=final_message, headers={'x-gameday-token':API_TOKEN})
 resp = urllib2.urlopen(req)
 resp.close()
 print(resp)
