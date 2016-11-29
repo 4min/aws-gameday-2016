@@ -67,12 +67,6 @@ for i in range(total_parts):
   print(message_items[i]['part_number'], " out of ", message_items[i]['total_parts'], " is ", message_items[i]['data'])
   final_message = final_message + message_items[i]['data']
 
-dynamodb.Table('FSMessages_complete').put_item(
-    Item={
-      'msgid': msg2process
-    }
-  )
-
 print (final_message)
 
 url = API_BASE + '/' + msg_id
@@ -83,6 +77,10 @@ resp = urllib2.urlopen(req)
 resp.close()
 print resp
 
-
+dynamodb.Table('FSMessages_complete').put_item(
+    Item={
+      'msgid': msg2process
+    }
+  )
 
 
