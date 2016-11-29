@@ -67,7 +67,7 @@ def process_message(msg):
             'msgid': msg['Id'],
             'total_parts': msg['TotalParts'],
             'part_number': msg['PartNumber'],
-            'data': msg['data']
+            'data': msg['Data']
             }
         )
 
