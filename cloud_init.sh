@@ -1,6 +1,8 @@
 #!/bin/bash
 yum -y install wget git
 pip install boto3 flask
+export APITOKEN=85c25bd823
+export APIBASE=https://dashboard.cash4code.net/score
 wget https://raw.githubusercontent.com/4min/aws-gameday-2016/master/server_basic_working.py
 chmod +x server.py
 touch /var/run/gameday.pid
