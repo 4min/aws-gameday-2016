@@ -93,7 +93,6 @@ def process_message(msg):
         req = urllib2.Request(url, data=result, headers={'x-gameday-token':ARGS.API_token})
         resp = urllib2.urlopen(req)
         resp.close()
-        print response
 
     return 'OK'
 
@@ -141,14 +140,50 @@ def check_messages(input_id):
         # we have all the parts
         build_final(item, input_id)
         # now we need to update dynamo saying we processed this message
-	    # TODO: implement this.
+	    # TODO mark_processed(input_id)
     else:
         # we have some parts but not all
         return
 
 def build_final(item, input_id):
+    print "have both parts"
+    result = item[0]['data'] + item[1]['data']
+    # sending the response to the score calculator
+    # format:
+    #   url -> api_base/jFgwN4GvTB1D2QiQsQ8GHwQUbbIJBS6r7ko9RVthXCJqAiobMsLRmsuwZRQTlOEW
+    #   headers -> x-gameday-token = API_token
+    #   data -> EaXA2G8cVTj1LGuRgv8ZhaGMLpJN2IKBwC5eYzAPNlJwkN4Qu1DIaI3H1zyUdf1H5NITR
+    APP.logger.debug("ID: %s" % msg_id)
+    APP.logger.debug("RESULT: %s" % result)
+    url = API_BASE + '/' + msg_id
+    print url
+    print result
+    req = urllib2.Request(url, data=result, headers={'x-gameday-token': ARGS.API_token})
+    resp = urllib2.urlopen(req)
+    resp.close()
+    return 'OK'
 
-
+def mark_processed(input_id):
+    try:
+        STATE_TABLE.update_item(
+            Key={
+                'Id': input_id
+            },
+            UpdateExpression="set #key=:val",
+            ExpressionAttributeValues={
+                ":val":data
+            },
+            ExpressionAttributeNames={
+                "#key":str(part_num),
+                "#p":"processed"
+            },
+            ConditionExpression="attribute_not_exists(#p)"
+        )
+    except Exception:
+        # conditional update failed since we have already processed this message
+        # at this point we can bail since we don't want to process again
+        # and lose cash moneys
+        return False
 
 if __name__ == "__main__":
 
