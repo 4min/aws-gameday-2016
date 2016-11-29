@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # By default, we disable threading for "debugging" purposes.
     # This will cause the app to block requests, which means that you miss out on some points,
     # and fail ALB healthchecks, but whatever I know I'm getting fired on Friday.
-    APP.run(host="0.0.0.0", port="80")
+    APP.run(host="0.0.0.0", port="80", threaded=True)
     
     # Use this to enable threading:
     # APP.run(host="0.0.0.0", port="80", threaded=True)
