@@ -46,6 +46,11 @@ def get_message_stats():
     msg_count = len(MESSAGES.keys())
     return "There are %d messages in the MESSAGES dictionary" % msg_count
 
+def removekey(d, key):
+    r = dict(d)
+    del r[key]
+    return r
+
 def process_message(msg):
     """
     processes the messages by combining and appending the kind code
@@ -84,6 +89,7 @@ def process_message(msg):
         resp = urllib2.urlopen(req)
         resp.close()
         print resp
+        removekey(MESSAGES, msg_id)
 
     return 'OK'
 
