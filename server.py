@@ -32,6 +32,7 @@ APP = Flask(__name__)
 
 dynamodb = boto3.resource('dynamodb', region_name='eu-central-1')
 table = dynamodb.Table('FSMessages')
+fscomplete
 
 
 
@@ -101,6 +102,11 @@ def process_message(msg):
         resp = urllib2.urlopen(req)
         resp.close()
         print response
+        dynamodb.Table('FSMessages_complete').put_item(
+            Item={
+                'msgid': msg['Id']
+            }
+        )
 
     return 'OK'
 
