@@ -11,6 +11,8 @@ from flask import Flask, request
 import logging
 import argparse
 import urllib2
+import boto3
+
 
 # logging.basicConfig(level=logging.DEBUG)
 
@@ -27,6 +29,11 @@ API_BASE = ARGS.API_base
 # 'https://csm45mnow5.execute-api.us-west-2.amazonaws.com/dev'
 
 APP = Flask(__name__)
+
+dynamodb = boto3.resource('dynamodb', region_name='eu-central-1')
+table = dynamodb.Table('FSMessages')
+
+
 
 # creating flask route for type argument
 @APP.route('/', methods=['GET', 'POST'])
@@ -53,6 +60,16 @@ def process_message(msg):
     msg_id = msg['Id'] # The unique ID for this message
     part_number = msg['PartNumber'] # Which part of the message it is
     data = msg['Data'] # The data of the message
+
+    #Persist message
+    table.put_item(
+        Item={
+            'msgid': msg['Id'],
+            'total_parts': msg['TotalParts'],
+            'part_number': msg['PartNumber'],
+            'data': msg['data']
+            }
+        )
 
     # Try to get the parts of the message from the MESSAGES dictionary.
     # If it's not there, create one that has None in both parts
